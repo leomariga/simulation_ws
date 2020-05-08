@@ -1,13 +1,27 @@
 #!/usr/bin/env python  
 import rospy, tf2_ros, geometry_msgs.msg, math
+import nav_msgs.msg
 from tf.transformations import quaternion_from_euler
 from tf.transformations import euler_from_quaternion
+import gazebo_msgs.msg
+
+modo = 0
 
 ultimotempo = 0
 velRobo = geometry_msgs.msg.Twist()
 posRobo = geometry_msgs.msg.Pose()
 
-def callbackVel(veldata):
+def callbackPosReal(veldata):
+    global posRobo
+    indice = veldata.name.index('summit')
+    posRobo = veldata.pose[indice]
+    print(veldata.pose[indice])
+
+def callbackVelOdometria(veldata):
+    global velRobo
+    velRobo = veldata.twist.twist
+
+def callbackVelComandoMA(veldata):
     global velRobo
     print("Callbackou")
     velRobo = veldata
@@ -33,7 +47,7 @@ def calculaPosicao(dt):
     posRobo.orientation.y = quat[1]
     posRobo.orientation.z = quat[2]
     posRobo.orientation.w = quat[3]
-    print("---------\n"+str(eulangulo))
+    print("---------\n"+str(eulangulo)+"\n"+str(velRobo.angular.z))
 
 
 def transformaframe():
@@ -41,7 +55,8 @@ def transformaframe():
     global posRobo
     dt = rospy.Time.now()-ultimotempo
     #print("Callbackou "+ str(dt.nsecs))
-    calculaPosicao(rospy.Time.now()-ultimotempo)
+    if ((modo ==0) or (modo == 1)):
+        calculaPosicao(rospy.Time.now()-ultimotempo)
     ultimotempo = rospy.Time.now()
     tf2Broadcast = tf2_ros.TransformBroadcaster()
     tf2Stamp = geometry_msgs.msg.TransformStamped()
@@ -60,7 +75,6 @@ def transformaframe():
 def transformaFramesThread():
     rate = rospy.Rate(100) # 20hz
     while not rospy.is_shutdown():
-        
         transformaframe()
         rate.sleep()
 
@@ -69,7 +83,12 @@ def transformaFramesThread():
 if __name__ == '__main__':
     print("Vamos comecar o teste")
     rospy.init_node("transformador")
-    rospy.Subscriber('cmd_vel', geometry_msgs.msg.Twist, callbackVel)
+    if modo == 0:
+        rospy.Subscriber('cmd_vel', geometry_msgs.msg.Twist, callbackVelComandoMA)
+    elif modo == 1:
+        rospy.Subscriber('odom', nav_msgs.msg.Odometry, callbackVelOdometria)
+    else:
+        rospy.Subscriber('gazebo/model_states', gazebo_msgs.msg.ModelStates, callbackPosReal)
     ultimotempo = rospy.Time.now()
     transformaFramesThread()
     rospy.spin()

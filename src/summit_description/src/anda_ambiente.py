@@ -28,8 +28,8 @@ def move():
     vel1.linear.z = 0
     vel1.angular.x = 0
     vel1.angular.y = 0
-    vel1.angular.z = -0.25
-    t1 = 12
+    vel1.angular.z = -0.2618
+    t1 = 36
 
     vel2 = Twist()
     vel2.linear.x = 0.25
@@ -52,8 +52,11 @@ def move():
 
 
 
-    comandos = [vel_parado, vel_parado, vel_parado,vel_parado, vel_parado, vel1, vel_parado, vel2, vel3, vel1, vel_parado]
-    tempos = [t_parado, t_parado, t_parado, t_parado, t_parado, t1, t_parado, t2, t3, 2, t_parado]
+    #comandos = [vel_parado, vel_parado, vel_parado,vel_parado, vel_parado, vel1, vel_parado, vel2, vel3, vel1, vel_parado]
+    #tempos = [t_parado, t_parado, t_parado, t_parado, t_parado, t1, t_parado, t2, t3, 2, t_parado]
+
+    comandos = [vel_parado, vel_parado, vel_parado,vel_parado, vel_parado, vel1, vel_parado]
+    tempos = [t_parado, t_parado, t_parado, t_parado, t_parado, t1, t_parado]
 
 
     rate = rospy.Rate(10) # 10hz
