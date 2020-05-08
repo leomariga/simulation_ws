@@ -1,0 +1,30 @@
+<?xml version="1.0"?>
+<launch>
+    <arg name="debug" default="false" />
+    <arg name="gui" default="true" />
+    <arg name="pause" default="false" />
+    <arg name="world" default="$(find simula_robo)/world/salinha_teste.world" />
+     <!-- include gazebo_ros launcher -->
+    <include file="$(find gazebo_ros)/launch/empty_world.launch">
+            <arg name="world_name" value="$(arg world)" />
+            <arg name="debug" value="$(arg debug)" />
+            <arg name="gui" value="$(arg gui)" />
+            <arg name="paused" value="$(arg pause)" />
+            <arg name="use_sim_time" value="true" />
+    </include>
+
+  <!-- Load the URDF into ROS parameter server -->
+  <param name="robot_description" command="$(find xacro)/xacro '$(find summit_description)/robot/summit.urdf.xacro' --inorder" />
+
+  <!-- Publish joint values -->
+  <node name="joint_state_publisher" pkg="joint_state_publisher" type="joint_state_publisher" />
+
+  <!-- convert joint states to TF transforms for rviz, etc  -->
+  <node name="robot_state_publisher" pkg="robot_state_publisher" type="state_publisher"/>
+
+  <!-- Spawn model -->
+  <node name="urdf_spawner" pkg="gazebo_ros" type="spawn_model" respawn="false" output="screen"
+    args="-urdf -x 0 -y 3 -z 0 -R 0 -P 0 -Y 4.7  -model summit -param robot_description"/>
+
+</launch>
+
