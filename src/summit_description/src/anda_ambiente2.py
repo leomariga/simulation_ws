@@ -4,8 +4,9 @@ import nav_msgs.msg
 from tf.transformations import quaternion_from_euler
 from tf.transformations import euler_from_quaternion
 import gazebo_msgs.msg
+import random
 
-modo = 0
+modo = 1
 
 ultimotempo = 0
 velRobo = geometry_msgs.msg.Twist()
@@ -30,16 +31,24 @@ def callbackVelComandoMA(veldata):
 def calculaPosicao(dt):
     global velRobo
     global posRobo
+    global modo
+
+    anguloErro = 0
+    posErro = 0
+
+    if (modo == 1):
+        anguloErro = random.random()*1*(3.1415/180) 
+        posErro = random.random()*2/100 
 
     eulangulo = list(euler_from_quaternion([posRobo.orientation.x, posRobo.orientation.y, posRobo.orientation.z, posRobo.orientation.w]))
 
-    eulangulo[2] =  eulangulo[2] + velRobo.angular.z * ((float) (dt.nsecs)/1000000000)
+    eulangulo[2] =  eulangulo[2] + (velRobo.angular.z+ anguloErro) * ((float) (dt.nsecs)/1000000000) 
 
-    posRobo.position.x =  posRobo.position.x + math.cos(eulangulo[2])*(velRobo.linear.x * ((float) (dt.nsecs)/1000000000))
-    posRobo.position.y =  posRobo.position.y + math.sin(eulangulo[2])*(velRobo.linear.x * ((float) (dt.nsecs)/1000000000))
+    posRobo.position.x =  posRobo.position.x + math.cos(eulangulo[2])*((velRobo.linear.x+posErro) * ((float) (dt.nsecs)/1000000000))
+    posRobo.position.y =  posRobo.position.y + math.sin(eulangulo[2])*((velRobo.linear.x+posErro) * ((float) (dt.nsecs)/1000000000))
 
-    posRobo.position.x =  posRobo.position.x + math.sin(eulangulo[2])*(velRobo.linear.y * ((float) (dt.nsecs)/1000000000))
-    posRobo.position.y =  posRobo.position.y + math.cos(eulangulo[2])*(velRobo.linear.y * ((float) (dt.nsecs)/1000000000))
+    posRobo.position.x =  posRobo.position.x + math.sin(eulangulo[2])*((velRobo.linear.y+posErro) * ((float) (dt.nsecs)/1000000000))
+    posRobo.position.y =  posRobo.position.y + math.cos(eulangulo[2])*((velRobo.linear.y+posErro) * ((float) (dt.nsecs)/1000000000))
 
     quat = list(quaternion_from_euler(eulangulo[0], eulangulo[1], eulangulo[2]))
 
@@ -47,7 +56,7 @@ def calculaPosicao(dt):
     posRobo.orientation.y = quat[1]
     posRobo.orientation.z = quat[2]
     posRobo.orientation.w = quat[3]
-    print("---------\n"+str(eulangulo)+"\n"+str(velRobo.angular.z))
+    print("---------\n"+str(eulangulo)+"\n"+str(anguloErro))
 
 
 def transformaframe():
